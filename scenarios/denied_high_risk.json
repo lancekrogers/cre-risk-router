@@ -1,0 +1,9 @@
+{
+  "name": "denied_high_risk",
+  "description": "Trade denied: risk score exceeds maximum threshold",
+  "signal_confidence": 0.9,
+  "risk_score": 85,
+  "oracle_age_seconds": 120,
+  "price_deviation_bps": 50,
+  "expected_decision": "DENIED"
+}

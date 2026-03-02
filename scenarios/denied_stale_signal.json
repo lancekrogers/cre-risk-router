@@ -1,0 +1,9 @@
+{
+  "name": "denied_stale_signal",
+  "description": "Trade denied: oracle data exceeds staleness threshold",
+  "signal_confidence": 0.8,
+  "risk_score": 40,
+  "oracle_age_seconds": 7200,
+  "price_deviation_bps": 50,
+  "expected_decision": "DENIED"
+}

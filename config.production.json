@@ -1,0 +1,17 @@
+{
+  "market_data_url": "https://api.coingecko.com/api/v3/coins/ethereum",
+  "price_feed_address": "",
+  "receipt_contract_address": "",
+  "target_network": "ethereum-testnet-sepolia",
+  "signal_confidence_threshold": 0.6,
+  "max_risk_score": 75,
+  "default_max_position_bps": 10000,
+  "decision_ttl_seconds": 300,
+  "price_deviation_max_bps": 500,
+  "volatility_scale_factor": 1.0,
+  "oracle_staleness_seconds": 3600,
+  "feed_decimals": 8,
+  "enable_heartbeat_gate": false,
+  "heartbeat_mirror_node_url": "",
+  "heartbeat_ttl_seconds": 600
+}

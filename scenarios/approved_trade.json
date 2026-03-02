@@ -1,0 +1,9 @@
+{
+  "name": "approved_trade",
+  "description": "Trade approved: high confidence signal, low risk score, fresh oracle data",
+  "signal_confidence": 0.85,
+  "risk_score": 30,
+  "oracle_age_seconds": 120,
+  "price_deviation_bps": 50,
+  "expected_decision": "APPROVED"
+}

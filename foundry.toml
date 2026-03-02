@@ -1,0 +1,5 @@
+[profile.default]
+src = "contracts/evm/src"
+out = "contracts/evm/out"
+test = "test"
+libs = ["lib"]

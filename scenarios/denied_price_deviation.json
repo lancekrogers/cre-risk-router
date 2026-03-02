@@ -1,0 +1,9 @@
+{
+  "name": "denied_price_deviation",
+  "description": "Trade denied: price deviation exceeds maximum allowed basis points",
+  "signal_confidence": 0.8,
+  "risk_score": 40,
+  "oracle_age_seconds": 120,
+  "price_deviation_bps": 800,
+  "expected_decision": "DENIED"
+}
