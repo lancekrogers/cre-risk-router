@@ -1,0 +1,33 @@
+Initializing...
+Checking RPC connectivity...
+Compiling workflow...
+✓ Workflow compiled
+2026-03-02T01:17:23Z [SIMULATION] Simulator Initialized
+
+2026-03-02T01:17:23Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+2026-03-02T01:17:23Z [USER LOG] msg="Scheduled risk sweep triggered"
+2026-03-02T01:17:23Z [USER LOG] msg="Risk decision" approved=true reason=approved maxPositionUSD=810000000 maxSlippageBps=500 chainlinkPrice=200000000000
+2026-03-02T01:17:38Z [USER LOG] msg="Receipt written on-chain" txHash=0x4cd1d6664747b5e2c53f1e10b819b50d437827d632212d204d941b1130c068f2
+2026-03-02T01:17:38Z [USER LOG] msg="Decision output" decision="{\"run_id\":[240,90,73,7,190,217,201,159,144,69,46,50,49,50,14,147,209,97,86,218,224,31,87,80,15,193,44,237,2,10,127,167],\"decision_hash\":[159,239,35,241,31,244,196,237,198,133,5,156,76,120,2,160,242,181,15,43,77,181,71,46,130,198,102,71,217,29,140,225],\"approved\":true,\"max_position_usd\":810000000,\"max_slippage_bps\":500,\"ttl_seconds\":300,\"reason\":\"approved\",\"chainlink_price\":200000000000,\"timestamp\":1772439443}"
+
+✓ Workflow Simulation Result:
+{
+  "Approved": true,
+  "ChainlinkPrice": 200000000000,
+  "DecisionHash": "n+8j8R/0xO3GhQWcTHgCoPK1DytNtUcugsZmR9kdjOE=",
+  "MaxPositionUSD": 810000000,
+  "MaxSlippageBps": 500,
+  "Reason": "approved",
+  "RunID": "8FpJB77ZyZ+QRS4yMTIOk9FhVtrgH1dQD8Es7QIKf6c=",
+  "TTLSeconds": 300,
+  "Timestamp": 1772439443
+}
+
+2026-03-02T01:17:38Z [SIMULATION] Execution finished signal received
+2026-03-02T01:17:38Z [SIMULATION] Skipping WorkflowEngineV2
+
+╭──────────────────────────────────────────────────────╮
+│ Simulation complete! Ready to deploy your workflow?  │
+│                                                      │
+│ Run cre account access to request deployment access. │
+╰──────────────────────────────────────────────────────╯
