@@ -105,3 +105,102 @@ func checkAgentHeartbeat(cfg Config, heartbeatTimestamp int64, now int64) (bool,
 	}
 	return true, ""
 }
+
+// OracleData holds the 5-tuple from Chainlink latestRoundData().
+type OracleData struct {
+	RoundID          int64
+	Answer           int64
+	StartedAt        int64
+	UpdatedAt        int64
+	AnsweredInRound  int64
+}
+
+// evaluateRisk runs all active gates sequentially and produces a RiskDecision.
+// Gate order: 7 (hold), 1 (confidence), 2 (risk score), 3 (staleness),
+// 4 (oracle health), 5 (price deviation), 6 (position sizing), 8 (heartbeat).
+func evaluateRisk(
+	req RiskRequest,
+	market *MarketData,
+	oracle OracleData,
+	cfg Config,
+	now int64,
+	heartbeatTimestamp int64,
+) RiskDecision {
+	makeDenied := func(reason string, chainlinkPrice uint64) RiskDecision {
+		d := RiskDecision{
+			Approved:       false,
+			MaxPositionUSD: 0,
+			MaxSlippageBps: 0,
+			TTLSeconds:     uint64(cfg.DecisionTTLSeconds),
+			Reason:         reason,
+			ChainlinkPrice: chainlinkPrice,
+			Timestamp:      now,
+		}
+		d.RunID = generateRunID(req.TaskID, req.AgentID, now)
+		d.DecisionHash = hashDecision(d)
+		return d
+	}
+
+	// Gate 7: Hold signal (fast path)
+	if ok, reason := checkHoldSignal(req); !ok {
+		return makeDenied(reason, 0)
+	}
+
+	// Gate 1: Signal confidence
+	if ok, reason := checkSignalConfidence(req, cfg); !ok {
+		return makeDenied(reason, 0)
+	}
+
+	// Gate 2: Risk score
+	if ok, reason := checkRiskScore(req, cfg); !ok {
+		return makeDenied(reason, 0)
+	}
+
+	// Gate 3: Signal staleness
+	if ok, reason := checkSignalStaleness(req, cfg, now); !ok {
+		return makeDenied(reason, 0)
+	}
+
+	// Gate 4: Oracle health
+	oracleOk, chainlinkPrice, oracleReason := checkOracleHealth(
+		oracle.RoundID, oracle.Answer, oracle.StartedAt, oracle.UpdatedAt, oracle.AnsweredInRound,
+		cfg, now,
+	)
+	if !oracleOk {
+		return makeDenied(oracleReason, 0)
+	}
+
+	// Gate 5: Price deviation (skip if no market data)
+	if market != nil && market.Price > 0 {
+		if ok, reason := checkPriceDeviation(chainlinkPrice, market.Price, cfg); !ok {
+			return makeDenied(reason, chainlinkPrice)
+		}
+	}
+
+	// Gate 6: Position sizing (never denies, constrains position)
+	volatility := 10.0 // fallback volatility
+	if market != nil {
+		volatility = market.Volatility24h
+	}
+	maxPosition := calculatePositionSize(req.RequestedPosition, volatility, req.RiskScore, cfg)
+	slippageBps := calculateSlippage(volatility, cfg.VolatilityScaleFactor)
+
+	// Gate 8: Heartbeat (skip if disabled)
+	if ok, reason := checkAgentHeartbeat(cfg, heartbeatTimestamp, now); !ok {
+		return makeDenied(reason, chainlinkPrice)
+	}
+
+	// All gates passed — approved
+	d := RiskDecision{
+		Approved:       true,
+		MaxPositionUSD: maxPosition,
+		MaxSlippageBps: slippageBps,
+		TTLSeconds:     uint64(cfg.DecisionTTLSeconds),
+		Reason:         "approved",
+		ChainlinkPrice: chainlinkPrice,
+		Timestamp:      now,
+	}
+	d.RunID = generateRunID(req.TaskID, req.AgentID, now)
+	d.DecisionHash = hashDecision(d)
+	return d
+}
