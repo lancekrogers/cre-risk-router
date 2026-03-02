@@ -11,20 +11,20 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 
 	receipt "github.com/lancekrogers/cre-risk-router/contracts/evm/src/generated/risk_decision_receipt"
+	"github.com/lancekrogers/cre-risk-router/pkg/riskeval"
 
 	"github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/evm"
 	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
 	"github.com/smartcontractkit/cre-sdk-go/cre"
 )
 
-// InitWorkflow registers CRE handlers. Only cron trigger is used because
-// CRE SDK v1.2.0 does not expose HTTP trigger capability. When HTTP triggers
-// become available, an HTTP handler should be added here as the primary
-// integration path for the agent-coordinator bridge (see pkg/creclient/).
-func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+// InitWorkflow registers CRE handlers. The cron trigger runs the risk
+// evaluation pipeline periodically. For HTTP-based evaluation (used by
+// the coordinator's creclient), run cmd/bridge separately.
+func InitWorkflow(config *riskeval.Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*riskeval.Config], error) {
 	sweepTrigger := cron.Trigger(&cron.Config{Schedule: "0 */5 * * * *"})
 
-	return cre.Workflow[*Config]{
+	return cre.Workflow[*riskeval.Config]{
 		cre.Handler(sweepTrigger, onScheduledSweep),
 	}, nil
 }
@@ -32,21 +32,20 @@ func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.Secre
 // onScheduledSweep is the cron-triggered handler that generates a synthetic
 // RiskRequest with realistic parameters and runs the full risk evaluation
 // pipeline. This is the primary entry point for CRE simulation.
-func onScheduledSweep(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*RiskDecision, error) {
+func onScheduledSweep(config *riskeval.Config, runtime cre.Runtime, trigger *cron.Payload) (*riskeval.RiskDecision, error) {
 	logger := runtime.Logger()
 	now := trigger.ScheduledExecutionTime.AsTime().Unix()
 	logger.Info("Scheduled risk sweep triggered", "time", time.Unix(now, 0))
 
-	// Synthetic RiskRequest with realistic parameters
-	req := RiskRequest{
+	req := riskeval.RiskRequest{
 		AgentID:           "agent-inference-001",
 		TaskID:            fmt.Sprintf("task-sweep-%d", now),
 		Signal:            "buy",
 		SignalConfidence:  0.85,
 		RiskScore:         10,
 		MarketPair:        "ETH/USD",
-		RequestedPosition: 1000_000000, // $1000 in 6-decimal
-		Timestamp:         now,         // uses trigger time so Gate 3 always passes
+		RequestedPosition: 1000_000000,
+		Timestamp:         now,
 	}
 
 	decision, err := executeRiskPipeline(config, runtime, req, now)
@@ -58,7 +57,7 @@ func onScheduledSweep(config *Config, runtime cre.Runtime, trigger *cron.Payload
 
 // executeRiskPipeline runs the full risk evaluation and on-chain receipt
 // write pipeline. Shared by all trigger handlers.
-func executeRiskPipeline(config *Config, runtime cre.Runtime, req RiskRequest, now int64) (*RiskDecision, error) {
+func executeRiskPipeline(config *riskeval.Config, runtime cre.Runtime, req riskeval.RiskRequest, now int64) (*riskeval.RiskDecision, error) {
 	logger := runtime.Logger()
 
 	chainSelector, err := evm.ChainSelectorFromName(config.TargetNetwork)
@@ -69,22 +68,18 @@ func executeRiskPipeline(config *Config, runtime cre.Runtime, req RiskRequest, n
 
 	// SDK LIMITATION (CRE v1.2.0): HTTP fetch capability is not available.
 	// Market data is nil, triggering Gate 5 skip and 10% fallback volatility.
-	// When HTTP capability ships, replace with:
-	//   resp, err := runtime.HTTP().Get(config.MarketDataURL).Await()
-	var market *MarketData
+	var market *riskeval.MarketData
 
 	// SDK LIMITATION (CRE v1.2.0): EVM reads in simulation return mock data.
-	// In production CRE DON, this would call latestRoundData() on the price
-	// feed contract. The mock data exercises the full gate pipeline correctly.
-	oracle := OracleData{
+	oracle := riskeval.OracleData{
 		RoundID:         1,
-		Answer:          200000000000, // $2000 at 8 decimals
+		Answer:          200000000000,
 		StartedAt:       now - 60,
 		UpdatedAt:       now - 60,
 		AnsweredInRound: 1,
 	}
 
-	decision := evaluateRisk(req, market, oracle, *config, now, 0)
+	decision := riskeval.EvaluateRisk(req, market, oracle, *config, now, 0)
 
 	logger.Info("Risk decision",
 		"approved", decision.Approved,
@@ -104,13 +99,13 @@ func executeRiskPipeline(config *Config, runtime cre.Runtime, req RiskRequest, n
 	uint256Type, _ := abi.NewType("uint256", "", nil)
 
 	args := abi.Arguments{
-		{Type: bytes32Type}, // runId
-		{Type: bytes32Type}, // decisionHash
-		{Type: boolType},    // approved
-		{Type: uint256Type}, // maxPositionUsd
-		{Type: uint256Type}, // maxSlippageBps
-		{Type: uint256Type}, // ttlSeconds
-		{Type: uint256Type}, // chainlinkPrice
+		{Type: bytes32Type},
+		{Type: bytes32Type},
+		{Type: boolType},
+		{Type: uint256Type},
+		{Type: uint256Type},
+		{Type: uint256Type},
+		{Type: uint256Type},
 	}
 
 	encoded, err := args.Pack(

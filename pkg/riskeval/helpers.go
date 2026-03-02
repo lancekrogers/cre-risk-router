@@ -1,28 +1,23 @@
-package main
+package riskeval
 
 import (
 	"encoding/binary"
 	"fmt"
 	"math"
+	"sync/atomic"
 
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
 // generateRunID produces a unique run identifier by hashing
 // taskID, agentID, and a nonce together with keccak256.
-// The nonce should include nanosecond precision or a monotonic counter
-// to avoid collisions when the same task+agent is evaluated multiple times.
 func generateRunID(taskID, agentID string, nonce int64) [32]byte {
-	// Use nanosecond-precision nonce and include a counter to prevent
-	// collisions within the same nanosecond (e.g., retries).
-	runIDCounter++
-	data := []byte(fmt.Sprintf("%s:%s:%d:%d", taskID, agentID, nonce, runIDCounter))
+	counter := atomic.AddUint64(&runIDCounter, 1)
+	data := []byte(fmt.Sprintf("%s:%s:%d:%d", taskID, agentID, nonce, counter))
 	return crypto.Keccak256Hash(data)
 }
 
 // runIDCounter provides sub-nanosecond uniqueness for RunID generation.
-// Reset per process; combined with nanosecond nonce this eliminates
-// practical collision risk.
 var runIDCounter uint64
 
 // hashDecision produces a keccak256 hash of all decision fields
@@ -57,23 +52,21 @@ func hashDecision(d RiskDecision) [32]byte {
 	return crypto.Keccak256Hash(buf)
 }
 
-// calculateSlippage returns slippage in basis points based on volatility.
-// Higher volatility results in wider slippage tolerance.
-func calculateSlippage(volatility float64, scaleFactor float64) uint64 {
+// CalculateSlippage returns slippage in basis points based on volatility.
+func CalculateSlippage(volatility float64, scaleFactor float64) uint64 {
 	absVol := math.Abs(volatility)
 	bps := uint64(math.Round(absVol * scaleFactor * 100))
 	if bps < 10 {
-		bps = 10 // minimum 10 bps
+		bps = 10
 	}
 	if bps > 500 {
-		bps = 500 // maximum 500 bps
+		bps = 500
 	}
 	return bps
 }
 
-// toFeedDecimals converts a float price to integer with specified
-// decimal precision. At 8 decimals, uint64 supports prices up to ~184 billion.
-func toFeedDecimals(price float64, decimals int) uint64 {
+// ToFeedDecimals converts a float price to integer with specified decimal precision.
+func ToFeedDecimals(price float64, decimals int) uint64 {
 	return uint64(math.Round(price * math.Pow(10, float64(decimals))))
 }
 

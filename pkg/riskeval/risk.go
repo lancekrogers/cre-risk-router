@@ -1,4 +1,4 @@
-package main
+package riskeval
 
 import "math"
 
@@ -27,8 +27,6 @@ func checkSignalStaleness(req RiskRequest, cfg Config, now int64) (bool, string)
 }
 
 // Gate 4: Chainlink Oracle Health
-// Validates the 5-tuple from latestRoundData().
-// Returns (true, chainlinkPrice, "") on success, or (false, 0, reason) on failure.
 func checkOracleHealth(
 	roundID, answer, startedAt, updatedAt, answeredInRound int64,
 	cfg Config,
@@ -52,9 +50,9 @@ func checkOracleHealth(
 // Gate 5: Price Deviation vs Oracle
 func checkPriceDeviation(chainlinkPrice uint64, marketPrice float64, cfg Config) (bool, string) {
 	if chainlinkPrice == 0 {
-		return true, "" // skip if no oracle price
+		return true, ""
 	}
-	marketPrice8d := toFeedDecimals(marketPrice, cfg.FeedDecimals)
+	marketPrice8d := ToFeedDecimals(marketPrice, cfg.FeedDecimals)
 	clPrice := int64(chainlinkPrice)
 	mkPrice := int64(marketPrice8d)
 
@@ -71,7 +69,6 @@ func checkPriceDeviation(chainlinkPrice uint64, marketPrice float64, cfg Config)
 }
 
 // Gate 6: Volatility-Adjusted Position Sizing
-// Does not deny — constrains position size and returns it.
 func calculatePositionSize(requestedPosition float64, volatility float64, riskScore int, cfg Config) uint64 {
 	absVol := math.Abs(volatility)
 	volatilityFactor := clamp(1.0-(absVol/100.0*cfg.VolatilityScaleFactor), 0.1, 1.0)
@@ -95,7 +92,7 @@ func checkHoldSignal(req RiskRequest) (bool, string) {
 // Gate 8: Agent Heartbeat Circuit Breaker
 func checkAgentHeartbeat(cfg Config, heartbeatTimestamp int64, now int64) (bool, string) {
 	if !cfg.EnableHeartbeatGate {
-		return true, "" // skip when disabled
+		return true, ""
 	}
 	if heartbeatTimestamp == 0 {
 		return false, "agent_heartbeat_stale"
@@ -106,19 +103,10 @@ func checkAgentHeartbeat(cfg Config, heartbeatTimestamp int64, now int64) (bool,
 	return true, ""
 }
 
-// OracleData holds the 5-tuple from Chainlink latestRoundData().
-type OracleData struct {
-	RoundID          int64
-	Answer           int64
-	StartedAt        int64
-	UpdatedAt        int64
-	AnsweredInRound  int64
-}
-
-// evaluateRisk runs all active gates sequentially and produces a RiskDecision.
+// EvaluateRisk runs all active gates sequentially and produces a RiskDecision.
 // Gate order: 7 (hold), 1 (confidence), 2 (risk score), 3 (staleness),
 // 4 (oracle health), 5 (price deviation), 6 (position sizing), 8 (heartbeat).
-func evaluateRisk(
+func EvaluateRisk(
 	req RiskRequest,
 	market *MarketData,
 	oracle OracleData,
@@ -141,27 +129,19 @@ func evaluateRisk(
 		return d
 	}
 
-	// Gate 7: Hold signal (fast path)
 	if ok, reason := checkHoldSignal(req); !ok {
 		return makeDenied(reason, 0)
 	}
-
-	// Gate 1: Signal confidence
 	if ok, reason := checkSignalConfidence(req, cfg); !ok {
 		return makeDenied(reason, 0)
 	}
-
-	// Gate 2: Risk score
 	if ok, reason := checkRiskScore(req, cfg); !ok {
 		return makeDenied(reason, 0)
 	}
-
-	// Gate 3: Signal staleness
 	if ok, reason := checkSignalStaleness(req, cfg, now); !ok {
 		return makeDenied(reason, 0)
 	}
 
-	// Gate 4: Oracle health
 	oracleOk, chainlinkPrice, oracleReason := checkOracleHealth(
 		oracle.RoundID, oracle.Answer, oracle.StartedAt, oracle.UpdatedAt, oracle.AnsweredInRound,
 		cfg, now,
@@ -170,27 +150,23 @@ func evaluateRisk(
 		return makeDenied(oracleReason, 0)
 	}
 
-	// Gate 5: Price deviation (skip if no market data)
 	if market != nil && market.Price > 0 {
 		if ok, reason := checkPriceDeviation(chainlinkPrice, market.Price, cfg); !ok {
 			return makeDenied(reason, chainlinkPrice)
 		}
 	}
 
-	// Gate 6: Position sizing (never denies, constrains position)
-	volatility := 10.0 // fallback volatility
+	volatility := 10.0
 	if market != nil {
 		volatility = market.Volatility24h
 	}
 	maxPosition := calculatePositionSize(req.RequestedPosition, volatility, req.RiskScore, cfg)
-	slippageBps := calculateSlippage(volatility, cfg.VolatilityScaleFactor)
+	slippageBps := CalculateSlippage(volatility, cfg.VolatilityScaleFactor)
 
-	// Gate 8: Heartbeat (skip if disabled)
 	if ok, reason := checkAgentHeartbeat(cfg, heartbeatTimestamp, now); !ok {
 		return makeDenied(reason, chainlinkPrice)
 	}
 
-	// All gates passed — approved
 	d := RiskDecision{
 		Approved:       true,
 		MaxPositionUSD: maxPosition,

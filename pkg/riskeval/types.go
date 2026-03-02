@@ -1,4 +1,4 @@
-package main
+package riskeval
 
 // Config is deserialized from config.staging.json or config.production.json.
 type Config struct {
@@ -46,8 +46,17 @@ type RiskDecision struct {
 
 // MarketData holds data from the CoinGecko API response.
 type MarketData struct {
-	Price        float64 `json:"current_price"`
-	Volume24h    float64 `json:"total_volume"`
+	Price         float64 `json:"current_price"`
+	Volume24h     float64 `json:"total_volume"`
 	Volatility24h float64 `json:"price_change_percentage_24h"`
-	MarketCap    float64 `json:"market_cap"`
+	MarketCap     float64 `json:"market_cap"`
+}
+
+// OracleData holds the 5-tuple from Chainlink latestRoundData().
+type OracleData struct {
+	RoundID         int64
+	Answer          int64
+	StartedAt       int64
+	UpdatedAt       int64
+	AnsweredInRound int64
 }

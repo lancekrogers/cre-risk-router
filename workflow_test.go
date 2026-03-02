@@ -1,9 +1,13 @@
 package main
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/lancekrogers/cre-risk-router/pkg/riskeval"
+)
 
 func TestConfigFields(t *testing.T) {
-	config := Config{
+	config := riskeval.Config{
 		MarketDataURL:             "https://api.coingecko.com/api/v3/coins/ethereum",
 		SignalConfidenceThreshold: 0.6,
 		MaxRiskScore:              75,

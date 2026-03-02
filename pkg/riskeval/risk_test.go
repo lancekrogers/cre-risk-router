@@ -1,6 +1,7 @@
-package main
+package riskeval
 
 import (
+	"sync"
 	"testing"
 )
 
@@ -21,7 +22,7 @@ func defaultConfig() Config {
 func defaultOracle(now int64) OracleData {
 	return OracleData{
 		RoundID:         1,
-		Answer:          200000000000, // $2000 at 8 decimals
+		Answer:          200000000000,
 		StartedAt:       now - 60,
 		UpdatedAt:       now - 60,
 		AnsweredInRound: 1,
@@ -247,9 +248,6 @@ func TestGate5_SkippedWhenNoPriceOracle(t *testing.T) {
 func TestGate6_LowVolatilityLowRisk(t *testing.T) {
 	cfg := defaultConfig()
 	pos := calculatePositionSize(1000_000000, 3.0, 10, cfg)
-	// volatilityFactor = 1.0 - (3.0/100.0 * 1.0) = 0.97
-	// riskFactor = 1.0 - (10/100.0) = 0.90
-	// dynamic = 1000000000 * 0.97 * 0.90 = 873000000
 	if pos != 873000000 {
 		t.Errorf("pos = %d, want 873000000", pos)
 	}
@@ -258,9 +256,6 @@ func TestGate6_LowVolatilityLowRisk(t *testing.T) {
 func TestGate6_HighVolatilityHighRisk(t *testing.T) {
 	cfg := defaultConfig()
 	pos := calculatePositionSize(1000_000000, 50.0, 70, cfg)
-	// volatilityFactor = 1.0 - (50.0/100.0 * 1.0) = 0.50
-	// riskFactor = 1.0 - (70/100.0) = 0.30
-	// dynamic = 1000000000 * 0.50 * 0.30 = 150000000
 	if pos != 150000000 {
 		t.Errorf("pos = %d, want 150000000", pos)
 	}
@@ -269,8 +264,6 @@ func TestGate6_HighVolatilityHighRisk(t *testing.T) {
 func TestGate6_ExtremeVolatilityClamped(t *testing.T) {
 	cfg := defaultConfig()
 	pos := calculatePositionSize(1000_000000, 200.0, 99, cfg)
-	// volatilityFactor clamped to 0.1, riskFactor clamped to 0.1
-	// dynamic = 1000000000 * 0.1 * 0.1 = 10000000
 	if pos != 10000000 {
 		t.Errorf("pos = %d, want 10000000", pos)
 	}
@@ -322,7 +315,7 @@ func TestGate8_EnabledStaleHeartbeat(t *testing.T) {
 	}
 }
 
-// --- evaluateRisk integration ---
+// --- EvaluateRisk integration ---
 
 func TestEvaluateRisk_ApprovedLowRisk(t *testing.T) {
 	cfg := defaultConfig()
@@ -339,7 +332,7 @@ func TestEvaluateRisk_ApprovedLowRisk(t *testing.T) {
 	}
 	oracle := defaultOracle(now)
 
-	d := evaluateRisk(req, nil, oracle, cfg, now, 0)
+	d := EvaluateRisk(req, nil, oracle, cfg, now, 0)
 	if !d.Approved {
 		t.Fatalf("expected approved, got denied: %s", d.Reason)
 	}
@@ -368,7 +361,7 @@ func TestEvaluateRisk_DeniedHoldSignal(t *testing.T) {
 	}
 	oracle := defaultOracle(now)
 
-	d := evaluateRisk(req, nil, oracle, cfg, now, 0)
+	d := EvaluateRisk(req, nil, oracle, cfg, now, 0)
 	if d.Approved {
 		t.Fatal("hold signal should be denied")
 	}
@@ -388,7 +381,7 @@ func TestEvaluateRisk_DeniedLowConfidence(t *testing.T) {
 	}
 	oracle := defaultOracle(now)
 
-	d := evaluateRisk(req, nil, oracle, cfg, now, 0)
+	d := EvaluateRisk(req, nil, oracle, cfg, now, 0)
 	if d.Approved {
 		t.Fatal("low confidence should be denied")
 	}
@@ -408,7 +401,7 @@ func TestEvaluateRisk_DeniedHighRisk(t *testing.T) {
 	}
 	oracle := defaultOracle(now)
 
-	d := evaluateRisk(req, nil, oracle, cfg, now, 0)
+	d := EvaluateRisk(req, nil, oracle, cfg, now, 0)
 	if d.Approved {
 		t.Fatal("high risk score should be denied")
 	}
@@ -428,7 +421,7 @@ func TestEvaluateRisk_DeniedStaleSignal(t *testing.T) {
 	}
 	oracle := defaultOracle(now)
 
-	d := evaluateRisk(req, nil, oracle, cfg, now, 0)
+	d := EvaluateRisk(req, nil, oracle, cfg, now, 0)
 	if d.Approved {
 		t.Fatal("stale signal should be denied")
 	}
@@ -448,13 +441,13 @@ func TestEvaluateRisk_DeniedBadOracle(t *testing.T) {
 	}
 	oracle := OracleData{
 		RoundID:         1,
-		Answer:          0, // invalid
+		Answer:          0,
 		StartedAt:       now - 60,
 		UpdatedAt:       now - 60,
 		AnsweredInRound: 1,
 	}
 
-	d := evaluateRisk(req, nil, oracle, cfg, now, 0)
+	d := EvaluateRisk(req, nil, oracle, cfg, now, 0)
 	if d.Approved {
 		t.Fatal("bad oracle should be denied")
 	}
@@ -466,9 +459,6 @@ func TestEvaluateRisk_DeniedBadOracle(t *testing.T) {
 func TestEvaluateRisk_GateOrderFirstDenyWins(t *testing.T) {
 	cfg := defaultConfig()
 	now := int64(1000000)
-
-	// Request fails Gate 7 (hold), Gate 1 (low confidence), and Gate 2 (high risk).
-	// Gate 7 should be the denial reason since it runs first.
 	req := RiskRequest{
 		Signal:           "hold",
 		SignalConfidence: 0.1,
@@ -477,7 +467,7 @@ func TestEvaluateRisk_GateOrderFirstDenyWins(t *testing.T) {
 	}
 	oracle := defaultOracle(now)
 
-	d := evaluateRisk(req, nil, oracle, cfg, now, 0)
+	d := EvaluateRisk(req, nil, oracle, cfg, now, 0)
 	if d.Approved {
 		t.Fatal("should be denied")
 	}
@@ -491,13 +481,13 @@ func TestEvaluateRisk_UniqueRunIDs(t *testing.T) {
 	now := int64(1000000)
 	oracle := defaultOracle(now)
 
-	d1 := evaluateRisk(RiskRequest{
+	d1 := EvaluateRisk(RiskRequest{
 		AgentID: "a1", TaskID: "t1", Signal: "buy",
 		SignalConfidence: 0.85, RiskScore: 10, Timestamp: now,
 		RequestedPosition: 1000_000000,
 	}, nil, oracle, cfg, now, 0)
 
-	d2 := evaluateRisk(RiskRequest{
+	d2 := EvaluateRisk(RiskRequest{
 		AgentID: "a1", TaskID: "t2", Signal: "buy",
 		SignalConfidence: 0.85, RiskScore: 10, Timestamp: now,
 		RequestedPosition: 1000_000000,
@@ -505,5 +495,65 @@ func TestEvaluateRisk_UniqueRunIDs(t *testing.T) {
 
 	if d1.RunID == d2.RunID {
 		t.Error("different tasks should produce different RunIDs")
+	}
+}
+
+// --- Helpers ---
+
+func TestGenerateRunID_ConcurrencySafe(t *testing.T) {
+	const goroutines = 100
+	var wg sync.WaitGroup
+	results := make(chan [32]byte, goroutines)
+
+	wg.Add(goroutines)
+	for i := 0; i < goroutines; i++ {
+		go func() {
+			defer wg.Done()
+			results <- generateRunID("task-1", "agent-1", 1234567890)
+		}()
+	}
+	wg.Wait()
+	close(results)
+
+	seen := make(map[[32]byte]bool)
+	for id := range results {
+		if seen[id] {
+			t.Fatalf("duplicate RunID detected: %x", id)
+		}
+		seen[id] = true
+	}
+	if len(seen) != goroutines {
+		t.Errorf("expected %d unique IDs, got %d", goroutines, len(seen))
+	}
+}
+
+func TestCalculateSlippage(t *testing.T) {
+	tests := []struct {
+		name        string
+		volatility  float64
+		scaleFactor float64
+		want        uint64
+	}{
+		{"low volatility", 0.01, 1.0, 10},
+		{"medium volatility", 0.5, 1.0, 50},
+		{"high volatility", 10.0, 1.0, 500},
+		{"negative volatility", -0.5, 1.0, 50},
+		{"zero volatility", 0.0, 1.0, 10},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := CalculateSlippage(tt.volatility, tt.scaleFactor)
+			if got != tt.want {
+				t.Errorf("CalculateSlippage(%f, %f) = %d, want %d", tt.volatility, tt.scaleFactor, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestToFeedDecimals(t *testing.T) {
+	got := ToFeedDecimals(2000.50, 8)
+	want := uint64(200050000000)
+	if got != want {
+		t.Errorf("ToFeedDecimals(2000.50, 8) = %d, want %d", got, want)
 	}
 }
