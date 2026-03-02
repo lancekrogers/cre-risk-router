@@ -1,9 +1,14 @@
 {
-  "name": "approved_trade",
-  "description": "Trade approved: high confidence signal, low risk score, fresh oracle data",
+  "_scenario": "approved_trade",
+  "_description": "Trade approved: high confidence buy signal, low risk score, fresh timestamp. Gate 6 constrains position from $1000 to ~$810 based on volatility and risk factors.",
+  "_expected_outcome": "approved",
+  "_expected_gate": "all_passed",
+  "agent_id": "agent-inference-hedera-001",
+  "task_id": "task-eval-20260301-001",
+  "signal": "buy",
   "signal_confidence": 0.85,
-  "risk_score": 30,
-  "oracle_age_seconds": 120,
-  "price_deviation_bps": 50,
-  "expected_decision": "APPROVED"
+  "risk_score": 10,
+  "market_pair": "ETH/USD",
+  "requested_position": 1000000000,
+  "timestamp": 0
 }

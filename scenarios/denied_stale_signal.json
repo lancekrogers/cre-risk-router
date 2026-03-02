@@ -1,9 +1,16 @@
 {
-  "name": "denied_stale_signal",
-  "description": "Trade denied: oracle data exceeds staleness threshold",
-  "signal_confidence": 0.8,
+  "_scenario": "denied_stale_signal",
+  "_description": "Trade denied at Gate 3: timestamp is 600s old, exceeding the 300s decision_ttl_seconds.",
+  "_expected_outcome": "denied",
+  "_expected_reason": "signal_expired",
+  "_expected_gate": "gate_3_signal_staleness",
+  "_note": "Set timestamp to (now - 600) to trigger staleness denial",
+  "agent_id": "agent-inference-hedera-001",
+  "task_id": "task-eval-20260301-004",
+  "signal": "buy",
+  "signal_confidence": 0.80,
   "risk_score": 40,
-  "oracle_age_seconds": 7200,
-  "price_deviation_bps": 50,
-  "expected_decision": "DENIED"
+  "market_pair": "ETH/USD",
+  "requested_position": 750000000,
+  "timestamp_offset_seconds": -600
 }

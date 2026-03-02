@@ -1,9 +1,15 @@
 {
-  "name": "denied_high_risk",
-  "description": "Trade denied: risk score exceeds maximum threshold",
-  "signal_confidence": 0.9,
-  "risk_score": 85,
-  "oracle_age_seconds": 120,
-  "price_deviation_bps": 50,
-  "expected_decision": "DENIED"
+  "_scenario": "denied_high_risk",
+  "_description": "Trade denied at Gate 2: risk score 82 exceeds the max_risk_score of 70.",
+  "_expected_outcome": "denied",
+  "_expected_reason": "risk_score_exceeds_maximum",
+  "_expected_gate": "gate_2_risk_score",
+  "agent_id": "agent-inference-hedera-001",
+  "task_id": "task-eval-20260301-003",
+  "signal": "sell",
+  "signal_confidence": 0.90,
+  "risk_score": 82,
+  "market_pair": "ETH/USD",
+  "requested_position": 2000000000,
+  "timestamp": 0
 }

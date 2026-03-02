@@ -1,9 +1,23 @@
 {
-  "name": "denied_price_deviation",
-  "description": "Trade denied: price deviation exceeds maximum allowed basis points",
-  "signal_confidence": 0.8,
-  "risk_score": 40,
-  "oracle_age_seconds": 120,
-  "price_deviation_bps": 800,
-  "expected_decision": "DENIED"
+  "_scenario": "denied_price_deviation",
+  "_description": "Trade denied at Gate 5: market price deviates >500 BPS (>5%) from Chainlink oracle price.",
+  "_expected_outcome": "denied",
+  "_expected_reason": "price_deviation_exceeds_threshold",
+  "_expected_gate": "gate_5_price_deviation",
+  "_note": "Requires market data with price significantly different from Chainlink feed",
+  "agent_id": "agent-inference-hedera-001",
+  "task_id": "task-eval-20260301-005",
+  "signal": "buy",
+  "signal_confidence": 0.85,
+  "risk_score": 20,
+  "market_pair": "ETH/USD",
+  "requested_position": 1000000000,
+  "timestamp": 0,
+  "_market_data": {
+    "current_price": 2200.00,
+    "total_volume": 15000000000,
+    "price_change_percentage_24h": 12.5,
+    "market_cap": 250000000000
+  },
+  "_chainlink_price_8d": 200000000000
 }

@@ -1,9 +1,15 @@
 {
-  "name": "denied_low_confidence",
-  "description": "Trade denied: signal confidence below threshold",
-  "signal_confidence": 0.3,
-  "risk_score": 40,
-  "oracle_age_seconds": 120,
-  "price_deviation_bps": 50,
-  "expected_decision": "DENIED"
+  "_scenario": "denied_low_confidence",
+  "_description": "Trade denied at Gate 1: signal confidence 0.45 is below the 0.7 threshold.",
+  "_expected_outcome": "denied",
+  "_expected_reason": "signal_confidence_below_threshold",
+  "_expected_gate": "gate_1_signal_confidence",
+  "agent_id": "agent-inference-hedera-001",
+  "task_id": "task-eval-20260301-002",
+  "signal": "buy",
+  "signal_confidence": 0.45,
+  "risk_score": 35,
+  "market_pair": "ETH/USD",
+  "requested_position": 500000000,
+  "timestamp": 0
 }
