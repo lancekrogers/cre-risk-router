@@ -1,0 +1,15 @@
+# Publication Status
+# Draft ready at: submission/moltbook-draft.md
+# Status: PENDING MANUAL PUBLICATION
+# Deadline: March 8, 2026 11:59 PM ET
+#
+# Steps to publish:
+# 1. Make repo public: gh repo edit lancekrogers/cre-risk-router --visibility public
+# 2. Push commits: git push
+# 3. Navigate to Moltbook/hackathon submission portal
+# 4. Paste content from submission/moltbook-draft.md
+# 5. Verify all links work in published post
+# 6. Record published URL below:
+#
+# Published URL:
+# Published at:
