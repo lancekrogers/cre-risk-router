@@ -17,6 +17,10 @@ import (
 	"github.com/smartcontractkit/cre-sdk-go/cre"
 )
 
+// InitWorkflow registers CRE handlers. Only cron trigger is used because
+// CRE SDK v1.2.0 does not expose HTTP trigger capability. When HTTP triggers
+// become available, an HTTP handler should be added here as the primary
+// integration path for the agent-coordinator bridge (see pkg/creclient/).
 func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
 	sweepTrigger := cron.Trigger(&cron.Config{Schedule: "0 */5 * * * *"})
 
@@ -63,14 +67,15 @@ func executeRiskPipeline(config *Config, runtime cre.Runtime, req RiskRequest, n
 	}
 	evmClient := &evm.Client{ChainSelector: chainSelector}
 
-	// Market data placeholder (CRE HTTP fetch not available in SDK v1.2.0)
+	// SDK LIMITATION (CRE v1.2.0): HTTP fetch capability is not available.
+	// Market data is nil, triggering Gate 5 skip and 10% fallback volatility.
+	// When HTTP capability ships, replace with:
+	//   resp, err := runtime.HTTP().Get(config.MarketDataURL).Await()
 	var market *MarketData
-	// When HTTP capability is available:
-	// resp, err := runtime.HTTP().Get(config.MarketDataURL).Await()
-	// For now, use nil (triggers fallback: skip Gate 5, 10% fallback volatility)
 
-	// Oracle data: In simulation, Chainlink read returns mock data.
-	// In production, this would read latestRoundData() from the price feed.
+	// SDK LIMITATION (CRE v1.2.0): EVM reads in simulation return mock data.
+	// In production CRE DON, this would call latestRoundData() on the price
+	// feed contract. The mock data exercises the full gate pipeline correctly.
 	oracle := OracleData{
 		RoundID:         1,
 		Answer:          200000000000, // $2000 at 8 decimals

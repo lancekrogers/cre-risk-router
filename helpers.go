@@ -10,10 +10,20 @@ import (
 
 // generateRunID produces a unique run identifier by hashing
 // taskID, agentID, and a nonce together with keccak256.
+// The nonce should include nanosecond precision or a monotonic counter
+// to avoid collisions when the same task+agent is evaluated multiple times.
 func generateRunID(taskID, agentID string, nonce int64) [32]byte {
-	data := []byte(fmt.Sprintf("%s:%s:%d", taskID, agentID, nonce))
+	// Use nanosecond-precision nonce and include a counter to prevent
+	// collisions within the same nanosecond (e.g., retries).
+	runIDCounter++
+	data := []byte(fmt.Sprintf("%s:%s:%d:%d", taskID, agentID, nonce, runIDCounter))
 	return crypto.Keccak256Hash(data)
 }
+
+// runIDCounter provides sub-nanosecond uniqueness for RunID generation.
+// Reset per process; combined with nanosecond nonce this eliminates
+// practical collision risk.
+var runIDCounter uint64
 
 // hashDecision produces a keccak256 hash of all decision fields
 // for on-chain verification.
