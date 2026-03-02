@@ -1,3 +1,4 @@
 contracts/evm/out/
 cache/
 *.wasm
+.env
