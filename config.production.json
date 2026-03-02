@@ -1,7 +1,7 @@
 {
   "market_data_url": "https://api.coingecko.com/api/v3/coins/ethereum",
   "price_feed_address": "",
-  "receipt_contract_address": "",
+  "receipt_contract_address": "0xfcA344515D72a05232DF168C1eA13Be22383cCB6",
   "target_network": "ethereum-testnet-sepolia",
   "signal_confidence_threshold": 0.6,
   "max_risk_score": 75,
