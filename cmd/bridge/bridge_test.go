@@ -29,7 +29,7 @@ func TestEvaluateHandler_Approved(t *testing.T) {
 	}
 
 	body, _ := json.Marshal(req)
-	httpReq := httptest.NewRequest(http.MethodPost, "/evaluate", bytes.NewReader(body))
+	httpReq := httptest.NewRequest(http.MethodPost, "/evaluate-risk", bytes.NewReader(body))
 	httpReq.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
 
@@ -72,7 +72,7 @@ func TestEvaluateHandler_Denied(t *testing.T) {
 	}
 
 	body, _ := json.Marshal(req)
-	httpReq := httptest.NewRequest(http.MethodPost, "/evaluate", bytes.NewReader(body))
+	httpReq := httptest.NewRequest(http.MethodPost, "/evaluate-risk", bytes.NewReader(body))
 	rec := httptest.NewRecorder()
 
 	handler.ServeHTTP(rec, httpReq)
@@ -99,12 +99,44 @@ func TestEvaluateHandler_InvalidBody(t *testing.T) {
 	log := slog.Default()
 	handler := newEvaluateHandler(cfg, log)
 
-	httpReq := httptest.NewRequest(http.MethodPost, "/evaluate", bytes.NewReader([]byte("not json")))
+	httpReq := httptest.NewRequest(http.MethodPost, "/evaluate-risk", bytes.NewReader([]byte("not json")))
 	rec := httptest.NewRecorder()
 
 	handler.ServeHTTP(rec, httpReq)
 
 	if rec.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want 400", rec.Code)
+	}
+}
+
+func TestMux_RoutesEvaluateRiskAndAlias(t *testing.T) {
+	cfg := loadConfig()
+	log := slog.Default()
+	evaluateHandler := newEvaluateHandler(cfg, log)
+
+	mux := http.NewServeMux()
+	mux.Handle("POST /evaluate-risk", evaluateHandler)
+	mux.Handle("POST /evaluate", evaluateHandler)
+
+	req := riskeval.RiskRequest{
+		AgentID:           "agent-1",
+		TaskID:            "task-1",
+		Signal:            "buy",
+		SignalConfidence:  0.85,
+		RiskScore:         10,
+		MarketPair:        "ETH/USD",
+		RequestedPosition: 1000_000000,
+		Timestamp:         time.Now().Unix(),
+	}
+	body, _ := json.Marshal(req)
+
+	for _, path := range []string{"/evaluate-risk", "/evaluate"} {
+		httpReq := httptest.NewRequest(http.MethodPost, path, bytes.NewReader(body))
+		httpReq.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+		mux.ServeHTTP(rec, httpReq)
+		if rec.Code != http.StatusOK {
+			t.Fatalf("path %s: status = %d, want 200", path, rec.Code)
+		}
 	}
 }

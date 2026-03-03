@@ -83,6 +83,16 @@ cre workflow simulate . --broadcast --non-interactive --trigger-index 0 -T stagi
 ./demo/e2e.sh --broadcast  # on-chain write
 ```
 
+**HTTP bridge (for coordinator integration)**:
+```bash
+just bridge
+```
+
+The bridge exposes:
+- `POST /evaluate-risk` (canonical)
+- `POST /evaluate` (compatibility alias)
+- `GET /health`
+
 ### Expected Output
 
 ```json

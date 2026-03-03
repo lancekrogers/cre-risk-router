@@ -12,6 +12,10 @@ install:
 build:
     GOOS=wasip1 GOARCH=wasm go build -o risk-router.wasm .
 
+# Run local HTTP bridge for coordinator integration
+bridge:
+    go run ./cmd/bridge
+
 # Run CRE simulation (dry run)
 simulate:
     cre workflow simulate . --non-interactive --trigger-index=0 --target=staging-settings

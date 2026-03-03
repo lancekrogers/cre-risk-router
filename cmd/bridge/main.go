@@ -31,7 +31,11 @@ func main() {
 	addr := envOr("BRIDGE_ADDR", ":8080")
 
 	mux := http.NewServeMux()
-	mux.Handle("POST /evaluate", newEvaluateHandler(cfg, log))
+	evaluateHandler := newEvaluateHandler(cfg, log)
+	// Canonical endpoint expected by coordinator creclient.
+	mux.Handle("POST /evaluate-risk", evaluateHandler)
+	// Compatibility alias.
+	mux.Handle("POST /evaluate", evaluateHandler)
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintln(w, `{"status":"ok"}`)
