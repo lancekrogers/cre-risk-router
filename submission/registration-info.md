@@ -7,7 +7,7 @@
 - **Track:** Chainlink CRE / DeFi Infrastructure
 - **GitHub:** https://github.com/lancekrogers/cre-risk-router
 - **Testnet:** Ethereum Sepolia (Chain ID 11155111)
-- **Contract:** 0xfcA344515D72a05232DF168C1eA13Be22383cCB6
+- **Contract:** 0x9C7Aa5502ad229c80894E272Be6d697Fd02001d7
 
 ## Team
 
@@ -22,8 +22,8 @@
 5. [ ] Include Moltbook post URL (after publishing)
 6. [ ] Save confirmation screenshot/email
 
-## Broadcast Evidence
+## On-Chain Evidence
 
-- Tx 1: https://sepolia.etherscan.io/tx/0xd8505ff76caa1e2d17b2ee49b625048f353359fabf68f02abedc9fda87360458
-- Tx 2: https://sepolia.etherscan.io/tx/0x4cd1d6664747b5e2c53f1e10b819b50d437827d632212d204d941b1130c068f2
-- Deploy: https://sepolia.etherscan.io/tx/0x36c066ba6a3d29abf6888382d5c44c014c7bff4443895cf6a7c84092c4314b46
+- Deploy (v2 w/ IReceiver): https://sepolia.etherscan.io/tx/0x9C7Aa5502ad229c80894E272Be6d697Fd02001d7
+- Direct recordDecision: https://sepolia.etherscan.io/tx/0x0c72922fd8e31f859dc5ce30364d87e86c939f7c2a2282899db11b65242dabd1
+- CRE Broadcast: https://sepolia.etherscan.io/tx/0xea6784a79fd108cfb4fc07127ab19b2c9f2a90867fcccc47b339e685fe3169c4

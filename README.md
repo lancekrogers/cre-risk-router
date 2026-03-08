@@ -178,13 +178,15 @@ Gate thresholds are defined in `config.staging.json` and `config.production.json
 
 | | |
 |---|---|
-| **Address** | [`0xfcA344515D72a05232DF168C1eA13Be22383cCB6`](https://sepolia.etherscan.io/address/0xfcA344515D72a05232DF168C1eA13Be22383cCB6) |
-| **Broadcast tx** | [`0xd8505ff...87360458`](https://sepolia.etherscan.io/tx/0xd8505ff76caa1e2d17b2ee49b625048f353359fabf68f02abedc9fda87360458) |
+| **Address** | [`0x9C7Aa5502ad229c80894E272Be6d697Fd02001d7`](https://sepolia.etherscan.io/address/0x9C7Aa5502ad229c80894E272Be6d697Fd02001d7) |
+| **Evidence tx** | [`0x0c72922...242dabd1`](https://sepolia.etherscan.io/tx/0x0c72922fd8e31f859dc5ce30364d87e86c939f7c2a2282899db11b65242dabd1) |
 
 **Features:**
-- `recordDecision()` — writes decision with duplicate prevention per `runId`
+- Implements CRE `IReceiver` interface — `onReport(bytes,bytes)` receives DON-forwarded reports via KeystoneForwarder
+- `recordDecision()` — direct entry point for testing; writes decision with duplicate prevention per `runId`
 - `isDecisionValid()` — TTL-based expiry check
 - `DecisionRecorded` event — for off-chain indexing
+- ERC165 `supportsInterface()` — interface detection for CRE compatibility
 - On-chain approval/denial counters
 
 ## Project Structure

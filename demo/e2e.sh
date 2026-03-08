@@ -24,7 +24,7 @@ else
 fi
 
 echo ""
-echo "Contract: 0xfcA344515D72a05232DF168C1eA13Be22383cCB6 (Sepolia)"
+echo "Contract: 0x9C7Aa5502ad229c80894E272Be6d697Fd02001d7 (Sepolia)"
 echo "Risk Gates: 8 sequential gates (hold, confidence, risk score, staleness,"
 echo "            oracle health, price deviation, position sizing, heartbeat)"
 echo ""
@@ -57,7 +57,7 @@ echo ""
 
 if [[ -n "$BROADCAST_FLAG" ]]; then
     echo "--- Verify On-Chain ---"
-    echo "  Etherscan: https://sepolia.etherscan.io/address/0xfcA344515D72a05232DF168C1eA13Be22383cCB6"
+    echo "  Etherscan: https://sepolia.etherscan.io/address/0x9C7Aa5502ad229c80894E272Be6d697Fd02001d7"
     echo "  Look for DecisionRecorded event in the latest transaction."
 fi
 
