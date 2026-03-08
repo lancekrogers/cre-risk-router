@@ -11,7 +11,7 @@ contract RiskDecisionReceiptTest is Test {
     bytes32 constant DECISION_HASH = keccak256("decision-data");
 
     function setUp() public {
-        receipt = new RiskDecisionReceipt();
+        receipt = new RiskDecisionReceipt(address(this));
     }
 
     function test_RecordApprovedDecision() public {

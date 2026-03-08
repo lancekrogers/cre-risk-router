@@ -23,6 +23,7 @@ var (
 // RiskDecisionReceiptMock is a mock implementation of RiskDecisionReceipt for testing.
 type RiskDecisionReceiptMock struct {
 	Decisions       func(DecisionsInput) (DecisionsOutput, error)
+	Forwarder       func() (common.Address, error)
 	GetRunCount     func() (*big.Int, error)
 	IsDecisionValid func(IsDecisionValidInput) (bool, error)
 	Recorded        func(RecordedInput) (bool, error)
@@ -78,6 +79,16 @@ func NewRiskDecisionReceiptMock(address common.Address, clientMock *evmmock.Clie
 				result.Timestamp,
 				result.Recorder,
 			)
+		},
+		string(abi.Methods["forwarder"].ID[:4]): func(payload []byte) ([]byte, error) {
+			if mock.Forwarder == nil {
+				return nil, errors.New("forwarder method not mocked")
+			}
+			result, err := mock.Forwarder()
+			if err != nil {
+				return nil, err
+			}
+			return abi.Methods["forwarder"].Outputs.Pack(result)
 		},
 		string(abi.Methods["getRunCount"].ID[:4]): func(payload []byte) ([]byte, error) {
 			if mock.GetRunCount == nil {

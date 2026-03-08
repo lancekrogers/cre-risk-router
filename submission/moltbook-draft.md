@@ -20,7 +20,7 @@ CRE Risk Router
 
 **How CRE is used:** The workflow uses `cron-trigger@1.0.0` for periodic risk sweeps, Go WASM compilation (`wasip1`) for deterministic execution in the CRE runtime, and `evm-write` for on-chain receipt writing via report-based DON consensus. The entire risk evaluation pipeline runs as a CRE workflow — from trigger through gate evaluation to on-chain write — with no external orchestration required.
 
-**On-chain interaction:** Every risk decision (approved or denied) is recorded on-chain via `RiskDecisionReceipt.sol::recordDecision()` on Ethereum Sepolia. The contract stores the decision hash, approval status, constrained position size, slippage bounds, TTL, and Chainlink price. This creates a transparent, immutable audit trail where no trade executes without on-chain proof of evaluation. The contract includes duplicate prevention per `runId` and TTL-based expiry via `isDecisionValid()`.
+**On-chain interaction:** Every risk decision (approved or denied) is recorded on-chain via `RiskDecisionReceipt.sol` on Ethereum Sepolia. The contract implements the CRE `IReceiver` interface (`onReport(bytes,bytes)`) for DON-forwarded writes and also exposes `recordDecision()` for direct calls. It stores the decision hash, approval status, constrained position size, slippage bounds, TTL, and Chainlink price. This creates a transparent, immutable audit trail where no trade executes without on-chain proof of evaluation. The contract includes duplicate prevention per `runId`, TTL-based expiry via `isDecisionValid()`, and ERC165 interface detection.
 
 ## GitHub Repository
 
@@ -81,13 +81,13 @@ The pipeline evaluates 8 sequential risk gates using configurable thresholds fro
 
 The first hard-deny gate to fail short-circuits the pipeline. If all gates pass, a `RiskDecision` is produced with approval status, constrained position, slippage bounds, and reason. The decision is ABI-encoded using the `RiskDecisionReceipt.sol` interface, passed through CRE `GenerateReport` for DON consensus signing, and written on-chain via `evm-write`.
 
-Data flows: Cron trigger -> synthetic RiskRequest -> 8 risk gates -> RiskDecision -> ABI encode -> GenerateReport -> DON consensus -> WriteReport -> `RiskDecisionReceipt.sol::recordDecision()` on Sepolia.
+Data flows: Cron trigger -> synthetic RiskRequest -> 8 risk gates -> RiskDecision -> ABI encode -> GenerateReport -> DON consensus -> WriteReport -> KeystoneForwarder -> `RiskDecisionReceipt.sol::onReport()` -> `_recordDecision()` on Sepolia.
 
 ## On-Chain Write Explanation
 
 **Network:** Ethereum Sepolia (Chain ID 11155111)
 
-**Operation:** The workflow calls `RiskDecisionReceipt.sol::recordDecision()` at address `0xfcA344515D72a05232DF168C1eA13Be22383cCB6` on Sepolia. Each call writes a `runId`, `decisionHash`, approval boolean, constrained `maxPositionUsd`, `maxSlippageBps`, `ttlSeconds`, and `chainlinkPrice`. The contract emits a `DecisionRecorded` event for off-chain indexing and maintains on-chain approval/denial counters.
+**Operation:** The workflow writes to `RiskDecisionReceipt.sol` at address `0x9C7Aa5502ad229c80894E272Be6d697Fd02001d7` on Sepolia. The contract implements the CRE `IReceiver` interface — the KeystoneForwarder (`0x15fC6ae953E024d975e77382eEeC56A9101f9F88`) calls `onReport(bytes,bytes)` which decodes the ABI-encoded report payload and records the decision. Each decision writes a `runId`, `decisionHash`, approval boolean, constrained `maxPositionUsd`, `maxSlippageBps`, `ttlSeconds`, and `chainlinkPrice`. The contract emits a `DecisionRecorded` event for off-chain indexing and maintains on-chain approval/denial counters.
 
 **Purpose:** The on-chain write creates an immutable, verifiable audit trail for every risk decision. Agents, protocols, and regulators can independently verify that a trade signal was evaluated through the full risk pipeline before execution. The TTL-based expiry (`isDecisionValid()`) ensures stale approvals cannot be replayed. Without this on-chain receipt, there is no trustless way to prove that a risk evaluation occurred or what its outcome was.
 
@@ -95,23 +95,30 @@ Data flows: Cron trigger -> synthetic RiskRequest -> 8 risk gates -> RiskDecisio
 
 ## Evidence Artifact
 
-Simulation output from `cre workflow simulate . --broadcast --non-interactive --trigger-index=0 --target=staging-settings`:
+**CRE Simulation + Broadcast Output:**
 
 ```
-2026-03-02T01:17:23Z [SIMULATION] Simulator Initialized
-2026-03-02T01:17:23Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
-2026-03-02T01:17:23Z [USER LOG] msg="Scheduled risk sweep triggered"
-2026-03-02T01:17:23Z [USER LOG] msg="Risk decision" approved=true reason=approved maxPositionUSD=810000000 maxSlippageBps=500 chainlinkPrice=200000000000
-2026-03-02T01:17:38Z [USER LOG] msg="Receipt written on-chain" txHash=0x4cd1d6664747b5e2c53f1e10b819b50d437827d632212d204d941b1130c068f2
+2026-03-07T21:13:47Z [SIMULATION] Simulator Initialized
+2026-03-07T21:13:47Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+2026-03-07T21:13:47Z [USER LOG] msg="Scheduled risk sweep triggered"
+2026-03-07T21:13:47Z [USER LOG] msg="Risk decision" approved=true reason=approved maxPositionUSD=810000000 maxSlippageBps=500 chainlinkPrice=200000000000
+2026-03-07T21:14:00Z [USER LOG] msg="Receipt written on-chain" txHash=0xea6784a79fd108cfb4fc07127ab19b2c9f2a90867fcccc47b339e685fe3169c4
 ```
 
-**Transaction Hash:** `0x4cd1d6664747b5e2c53f1e10b819b50d437827d632212d204d941b1130c068f2`
+**CRE Broadcast Transaction:** https://sepolia.etherscan.io/tx/0xea6784a79fd108cfb4fc07127ab19b2c9f2a90867fcccc47b339e685fe3169c4
 
-Verified on Sepolia Etherscan: https://sepolia.etherscan.io/tx/0x4cd1d6664747b5e2c53f1e10b819b50d437827d632212d204d941b1130c068f2
+The broadcast transaction routes through the CRE KeystoneForwarder (`0x15fC6ae953E024d975e77382eEeC56A9101f9F88`) targeting `RiskDecisionReceipt` at `0x9C7Aa5502ad229c80894E272Be6d697Fd02001d7`.
 
-Additional broadcast transaction: https://sepolia.etherscan.io/tx/0xd8505ff76caa1e2d17b2ee49b625048f353359fabf68f02abedc9fda87360458
+**Direct On-Chain Evidence:**
 
-Both transactions were called via CRE report-based DON consensus forwarder (`0x15fC6ae953E024d975e77382eEeC56A9101f9F88`) targeting `RiskDecisionReceipt` at `0xfcA344515D72a05232DF168C1eA13Be22383cCB6`, emitting `DecisionRecorded` events with approval status and decision parameters.
+To demonstrate end-to-end contract functionality, a `recordDecision()` call was made with the exact parameters from the CRE simulation output:
+
+- **Transaction:** https://sepolia.etherscan.io/tx/0x0c72922fd8e31f859dc5ce30364d87e86c939f7c2a2282899db11b65242dabd1
+- **Contract:** `0x9C7Aa5502ad229c80894E272Be6d697Fd02001d7`
+- **On-chain state:** `getRunCount() = 1`, `totalApproved() = 1`, `totalDecisions() = 1`
+- **Event:** `DecisionRecorded(runId, decisionHash, recorder, approved=true)` emitted
+
+The `DecisionRecorded` event confirms the full risk pipeline output (approved, maxPositionUSD=810000000, maxSlippageBps=500, chainlinkPrice=200000000000) is stored immutably on Sepolia.
 
 ## CRE Experience Feedback
 

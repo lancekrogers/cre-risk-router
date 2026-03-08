@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-contract RiskDecisionReceipt {
+import {IReceiver} from "./interfaces/IReceiver.sol";
+import {IERC165} from "./interfaces/IERC165.sol";
+
+contract RiskDecisionReceipt is IReceiver {
     struct Decision {
         bytes32 runId;
         bytes32 decisionHash;
@@ -22,6 +25,8 @@ contract RiskDecisionReceipt {
     uint256 public totalApproved;
     uint256 public totalDenied;
 
+    address public forwarder;
+
     event DecisionRecorded(
         bytes32 indexed runId,
         bytes32 indexed decisionHash,
@@ -29,6 +34,26 @@ contract RiskDecisionReceipt {
         bool approved
     );
 
+    constructor(address _forwarder) {
+        forwarder = _forwarder;
+    }
+
+    /// @notice IReceiver entry point called by the CRE KeystoneForwarder.
+    function onReport(bytes calldata, bytes calldata report) external override {
+        (
+            bytes32 runId,
+            bytes32 decisionHash,
+            bool approved,
+            uint256 maxPositionUsd,
+            uint256 maxSlippageBps,
+            uint256 ttlSeconds,
+            uint256 chainlinkPrice
+        ) = abi.decode(report, (bytes32, bytes32, bool, uint256, uint256, uint256, uint256));
+
+        _recordDecision(runId, decisionHash, approved, maxPositionUsd, maxSlippageBps, ttlSeconds, chainlinkPrice);
+    }
+
+    /// @notice Direct entry point for testing without CRE forwarder.
     function recordDecision(
         bytes32 runId,
         bytes32 decisionHash,
@@ -38,6 +63,18 @@ contract RiskDecisionReceipt {
         uint256 ttlSeconds,
         uint256 chainlinkPrice
     ) external {
+        _recordDecision(runId, decisionHash, approved, maxPositionUsd, maxSlippageBps, ttlSeconds, chainlinkPrice);
+    }
+
+    function _recordDecision(
+        bytes32 runId,
+        bytes32 decisionHash,
+        bool approved,
+        uint256 maxPositionUsd,
+        uint256 maxSlippageBps,
+        uint256 ttlSeconds,
+        uint256 chainlinkPrice
+    ) internal {
         require(!recorded[runId], "Decision already recorded");
 
         decisions[runId] = Decision({
@@ -75,5 +112,10 @@ contract RiskDecisionReceipt {
 
     function getRunCount() external view returns (uint256) {
         return runIds.length;
+    }
+
+    /// @notice ERC165 interface detection.
+    function supportsInterface(bytes4 interfaceId) external pure override returns (bool) {
+        return interfaceId == type(IReceiver).interfaceId || interfaceId == type(IERC165).interfaceId;
     }
 }

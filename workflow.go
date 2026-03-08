@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 
 	receipt "github.com/lancekrogers/cre-risk-router/contracts/evm/src/generated/risk_decision_receipt"
@@ -93,15 +94,32 @@ func executeRiskPipeline(config *riskeval.Config, runtime cre.Runtime, req riske
 		return nil, fmt.Errorf("failed to create receipt binding: %w", err)
 	}
 
-	encoded, err := receiptContract.Codec.EncodeRecordDecisionMethodCall(receipt.RecordDecisionInput{
-		RunId:          decision.RunID,
-		DecisionHash:   decision.DecisionHash,
-		Approved:       decision.Approved,
-		MaxPositionUsd: new(big.Int).SetUint64(decision.MaxPositionUSD),
-		MaxSlippageBps: new(big.Int).SetUint64(decision.MaxSlippageBps),
-		TtlSeconds:     new(big.Int).SetUint64(decision.TTLSeconds),
-		ChainlinkPrice: new(big.Int).SetUint64(decision.ChainlinkPrice),
-	})
+	// Encode raw parameters for the CRE report payload. The CRE forwarder
+	// calls onReport() on the receiver contract, which passes the raw payload
+	// to _processReport() for abi.decode(). No function selector needed.
+	bytes32Type, _ := abi.NewType("bytes32", "", nil)
+	boolType, _ := abi.NewType("bool", "", nil)
+	uint256Type, _ := abi.NewType("uint256", "", nil)
+
+	args := abi.Arguments{
+		{Type: bytes32Type},
+		{Type: bytes32Type},
+		{Type: boolType},
+		{Type: uint256Type},
+		{Type: uint256Type},
+		{Type: uint256Type},
+		{Type: uint256Type},
+	}
+
+	encoded, err := args.Pack(
+		decision.RunID,
+		decision.DecisionHash,
+		decision.Approved,
+		new(big.Int).SetUint64(decision.MaxPositionUSD),
+		new(big.Int).SetUint64(decision.MaxSlippageBps),
+		new(big.Int).SetUint64(decision.TTLSeconds),
+		new(big.Int).SetUint64(decision.ChainlinkPrice),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode decision: %w", err)
 	}

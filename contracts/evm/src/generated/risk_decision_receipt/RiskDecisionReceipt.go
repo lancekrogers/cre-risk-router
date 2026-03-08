@@ -51,7 +51,7 @@ var (
 )
 
 var RiskDecisionReceiptMetaData = &bind.MetaData{
-	ABI: "[{\"type\":\"function\",\"name\":\"decisions\",\"inputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"outputs\":[{\"name\":\"runId\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"decisionHash\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"approved\",\"type\":\"bool\",\"internalType\":\"bool\"},{\"name\":\"maxPositionUsd\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"maxSlippageBps\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"ttlSeconds\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"chainlinkPrice\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"timestamp\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"recorder\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"getRunCount\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"isDecisionValid\",\"inputs\":[{\"name\":\"runId\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"recordDecision\",\"inputs\":[{\"name\":\"runId\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"decisionHash\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"approved\",\"type\":\"bool\",\"internalType\":\"bool\"},{\"name\":\"maxPositionUsd\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"maxSlippageBps\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"ttlSeconds\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"chainlinkPrice\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"recorded\",\"inputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"runIds\",\"inputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"totalApproved\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"totalDecisions\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"totalDenied\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"event\",\"name\":\"DecisionRecorded\",\"inputs\":[{\"name\":\"runId\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"decisionHash\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"recorder\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"approved\",\"type\":\"bool\",\"indexed\":false,\"internalType\":\"bool\"}],\"anonymous\":false}]",
+	ABI: "[{\"type\":\"constructor\",\"inputs\":[{\"name\":\"_forwarder\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"decisions\",\"inputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"outputs\":[{\"name\":\"runId\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"decisionHash\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"approved\",\"type\":\"bool\",\"internalType\":\"bool\"},{\"name\":\"maxPositionUsd\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"maxSlippageBps\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"ttlSeconds\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"chainlinkPrice\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"timestamp\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"recorder\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"forwarder\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"getRunCount\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"isDecisionValid\",\"inputs\":[{\"name\":\"runId\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"onReport\",\"inputs\":[{\"name\":\"\",\"type\":\"bytes\",\"internalType\":\"bytes\"},{\"name\":\"report\",\"type\":\"bytes\",\"internalType\":\"bytes\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"recordDecision\",\"inputs\":[{\"name\":\"runId\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"decisionHash\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"approved\",\"type\":\"bool\",\"internalType\":\"bool\"},{\"name\":\"maxPositionUsd\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"maxSlippageBps\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"ttlSeconds\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"chainlinkPrice\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"recorded\",\"inputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"runIds\",\"inputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"supportsInterface\",\"inputs\":[{\"name\":\"interfaceId\",\"type\":\"bytes4\",\"internalType\":\"bytes4\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"pure\"},{\"type\":\"function\",\"name\":\"totalApproved\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"totalDecisions\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"totalDenied\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"event\",\"name\":\"DecisionRecorded\",\"inputs\":[{\"name\":\"runId\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"decisionHash\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"recorder\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"approved\",\"type\":\"bool\",\"indexed\":false,\"internalType\":\"bool\"}],\"anonymous\":false}]",
 }
 
 // Structs
@@ -63,6 +63,11 @@ type DecisionsInput struct {
 
 type IsDecisionValidInput struct {
 	RunId [32]byte
+}
+
+type OnReportInput struct {
+	Arg0   []byte
+	Report []byte
 }
 
 type RecordDecisionInput struct {
@@ -81,6 +86,10 @@ type RecordedInput struct {
 
 type RunIdsInput struct {
 	Arg0 *big.Int
+}
+
+type SupportsInterfaceInput struct {
+	InterfaceId [4]byte
 }
 
 // Contract Method Outputs
@@ -133,15 +142,20 @@ type RiskDecisionReceipt struct {
 type RiskDecisionReceiptCodec interface {
 	EncodeDecisionsMethodCall(in DecisionsInput) ([]byte, error)
 	DecodeDecisionsMethodOutput(data []byte) (DecisionsOutput, error)
+	EncodeForwarderMethodCall() ([]byte, error)
+	DecodeForwarderMethodOutput(data []byte) (common.Address, error)
 	EncodeGetRunCountMethodCall() ([]byte, error)
 	DecodeGetRunCountMethodOutput(data []byte) (*big.Int, error)
 	EncodeIsDecisionValidMethodCall(in IsDecisionValidInput) ([]byte, error)
 	DecodeIsDecisionValidMethodOutput(data []byte) (bool, error)
+	EncodeOnReportMethodCall(in OnReportInput) ([]byte, error)
 	EncodeRecordDecisionMethodCall(in RecordDecisionInput) ([]byte, error)
 	EncodeRecordedMethodCall(in RecordedInput) ([]byte, error)
 	DecodeRecordedMethodOutput(data []byte) (bool, error)
 	EncodeRunIdsMethodCall(in RunIdsInput) ([]byte, error)
 	DecodeRunIdsMethodOutput(data []byte) ([32]byte, error)
+	EncodeSupportsInterfaceMethodCall(in SupportsInterfaceInput) ([]byte, error)
+	DecodeSupportsInterfaceMethodOutput(data []byte) (bool, error)
 	EncodeTotalApprovedMethodCall() ([]byte, error)
 	DecodeTotalApprovedMethodOutput(data []byte) (*big.Int, error)
 	EncodeTotalDecisionsMethodCall() ([]byte, error)
@@ -294,6 +308,28 @@ func (c *Codec) DecodeDecisionsMethodOutput(data []byte) (DecisionsOutput, error
 	}, nil
 }
 
+func (c *Codec) EncodeForwarderMethodCall() ([]byte, error) {
+	return c.abi.Pack("forwarder")
+}
+
+func (c *Codec) DecodeForwarderMethodOutput(data []byte) (common.Address, error) {
+	vals, err := c.abi.Methods["forwarder"].Outputs.Unpack(data)
+	if err != nil {
+		return *new(common.Address), err
+	}
+	jsonData, err := json.Marshal(vals[0])
+	if err != nil {
+		return *new(common.Address), fmt.Errorf("failed to marshal ABI result: %w", err)
+	}
+
+	var result common.Address
+	if err := json.Unmarshal(jsonData, &result); err != nil {
+		return *new(common.Address), fmt.Errorf("failed to unmarshal to common.Address: %w", err)
+	}
+
+	return result, nil
+}
+
 func (c *Codec) EncodeGetRunCountMethodCall() ([]byte, error) {
 	return c.abi.Pack("getRunCount")
 }
@@ -336,6 +372,10 @@ func (c *Codec) DecodeIsDecisionValidMethodOutput(data []byte) (bool, error) {
 	}
 
 	return result, nil
+}
+
+func (c *Codec) EncodeOnReportMethodCall(in OnReportInput) ([]byte, error) {
+	return c.abi.Pack("onReport", in.Arg0, in.Report)
 }
 
 func (c *Codec) EncodeRecordDecisionMethodCall(in RecordDecisionInput) ([]byte, error) {
@@ -381,6 +421,28 @@ func (c *Codec) DecodeRunIdsMethodOutput(data []byte) ([32]byte, error) {
 	var result [32]byte
 	if err := json.Unmarshal(jsonData, &result); err != nil {
 		return *new([32]byte), fmt.Errorf("failed to unmarshal to [32]byte: %w", err)
+	}
+
+	return result, nil
+}
+
+func (c *Codec) EncodeSupportsInterfaceMethodCall(in SupportsInterfaceInput) ([]byte, error) {
+	return c.abi.Pack("supportsInterface", in.InterfaceId)
+}
+
+func (c *Codec) DecodeSupportsInterfaceMethodOutput(data []byte) (bool, error) {
+	vals, err := c.abi.Methods["supportsInterface"].Outputs.Unpack(data)
+	if err != nil {
+		return *new(bool), err
+	}
+	jsonData, err := json.Marshal(vals[0])
+	if err != nil {
+		return *new(bool), fmt.Errorf("failed to marshal ABI result: %w", err)
+	}
+
+	var result bool
+	if err := json.Unmarshal(jsonData, &result); err != nil {
+		return *new(bool), fmt.Errorf("failed to unmarshal to bool: %w", err)
 	}
 
 	return result, nil
@@ -572,6 +634,43 @@ func (c RiskDecisionReceipt) Decisions(
 	})
 	return cre.Then(promise, func(response *evm.CallContractReply) (DecisionsOutput, error) {
 		return c.Codec.DecodeDecisionsMethodOutput(response.Data)
+	})
+
+}
+
+func (c RiskDecisionReceipt) Forwarder(
+	runtime cre.Runtime,
+	blockNumber *big.Int,
+) cre.Promise[common.Address] {
+	calldata, err := c.Codec.EncodeForwarderMethodCall()
+	if err != nil {
+		return cre.PromiseFromResult[common.Address](*new(common.Address), err)
+	}
+
+	var bn cre.Promise[*pb.BigInt]
+	if blockNumber == nil {
+		promise := c.client.HeaderByNumber(runtime, &evm.HeaderByNumberRequest{
+			BlockNumber: bindings.FinalizedBlockNumber,
+		})
+
+		bn = cre.Then(promise, func(finalizedBlock *evm.HeaderByNumberReply) (*pb.BigInt, error) {
+			if finalizedBlock == nil || finalizedBlock.Header == nil {
+				return nil, errors.New("failed to get finalized block header")
+			}
+			return finalizedBlock.Header.BlockNumber, nil
+		})
+	} else {
+		bn = cre.PromiseFromResult(pb.NewBigIntFromInt(blockNumber), nil)
+	}
+
+	promise := cre.ThenPromise(bn, func(bn *pb.BigInt) cre.Promise[*evm.CallContractReply] {
+		return c.client.CallContract(runtime, &evm.CallContractRequest{
+			Call:        &evm.CallMsg{To: c.Address.Bytes(), Data: calldata},
+			BlockNumber: bn,
+		})
+	})
+	return cre.Then(promise, func(response *evm.CallContractReply) (common.Address, error) {
+		return c.Codec.DecodeForwarderMethodOutput(response.Data)
 	})
 
 }

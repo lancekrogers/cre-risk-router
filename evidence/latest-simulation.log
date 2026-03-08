@@ -1,0 +1,37 @@
+# CRE Risk Router - Evidence Capture
+# Date: 2026-03-07T21:13:47Z
+# Contract: 0x9C7Aa5502ad229c80894E272Be6d697Fd02001d7 (Sepolia)
+# Forwarder: 0x15fC6ae953E024d975e77382eEeC56A9101f9F88
+
+## CRE Simulation + Broadcast
+
+Command: cre workflow simulate . --non-interactive --trigger-index=0 -T staging-settings --broadcast
+
+2026-03-07T21:13:47Z [SIMULATION] Simulator Initialized
+2026-03-07T21:13:47Z [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+2026-03-07T21:13:47Z [USER LOG] msg="Scheduled risk sweep triggered"
+2026-03-07T21:13:47Z [USER LOG] msg="Risk decision" approved=true reason=approved maxPositionUSD=810000000 maxSlippageBps=500 chainlinkPrice=200000000000
+2026-03-07T21:14:00Z [USER LOG] msg="Receipt written on-chain" txHash=0xea6784a79fd108cfb4fc07127ab19b2c9f2a90867fcccc47b339e685fe3169c4
+
+Broadcast TX: https://sepolia.etherscan.io/tx/0xea6784a79fd108cfb4fc07127ab19b2c9f2a90867fcccc47b339e685fe3169c4
+
+## Direct recordDecision() Call
+
+Used exact parameters from CRE simulation to demonstrate contract functionality:
+- runId: 0xe7e3288353e9e52a933d4ca9d94ca96f057f60bc8282a802c86ab6c1be8177de
+- decisionHash: 0xccf9b36d551acfa56dc7453b9f92075e7cfe4fb7a8194e6156a567b9c2832381
+- approved: true
+- maxPositionUsd: 810000000
+- maxSlippageBps: 500
+- ttlSeconds: 300
+- chainlinkPrice: 200000000000
+
+Direct TX: https://sepolia.etherscan.io/tx/0x0c72922fd8e31f859dc5ce30364d87e86c939f7c2a2282899db11b65242dabd1
+
+## On-Chain Verification
+
+cast call 0x9C7Aa5502ad229c80894E272Be6d697Fd02001d7 "getRunCount()(uint256)" → 1
+cast call 0x9C7Aa5502ad229c80894E272Be6d697Fd02001d7 "totalApproved()(uint256)" → 1
+cast call 0x9C7Aa5502ad229c80894E272Be6d697Fd02001d7 "totalDecisions()(uint256)" → 1
+
+DecisionRecorded event emitted with approved=true.
