@@ -8,6 +8,8 @@
 
 An **on-chain risk decision layer** for autonomous DeFi agents, built on the [Chainlink Runtime Environment (CRE)](https://chain.link). The Risk Router evaluates trade signals through **8 sequential risk gates** and writes immutable decision receipts to Ethereum via Chainlink DON consensus.
 
+Part of the [Obey Agent Economy](https://github.com/lancekrogers/Obey-Agent-Economy) project, where this workflow serves as the CRE-based risk control layer.
+
 > **TL;DR** — An agent sends a trade signal. The Risk Router runs it through 8 gates (confidence, risk score, staleness, oracle health, price deviation, position sizing, heartbeat). If it passes, a constrained position is approved. The decision is ABI-encoded, signed by DON consensus, and written on-chain as an immutable receipt.
 
 ---
