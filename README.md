@@ -133,18 +133,27 @@ just bridge
 }
 ```
 
-**Response:**
+**Response** (HTTP 200 — both approved and denied):
 
 ```json
 {
-  "Approved": true,
-  "ChainlinkPrice": 200000000000,
-  "MaxPositionUSD": 810000000,
-  "MaxSlippageBps": 500,
-  "Reason": "approved",
-  "TTLSeconds": 300
+  "run_id": "qYRcvrpNcByCDTeEMfE/hTWqjZIM+rm+91XnPWWFOCA=",
+  "decision_hash": "07DEGCyEw8BniT6K8/A+n2SBsrDsx83WU9QZdmoA8Yg=",
+  "approved": true,
+  "max_position_usd": 810000000,
+  "max_slippage_bps": 500,
+  "ttl_seconds": 300,
+  "reason": "approved",
+  "chainlink_price": 200000000000,
+  "timestamp": 1772943222
 }
 ```
+
+**Error** (HTTP 400): `{"error":"invalid request body"}`
+
+**Denial reason codes:** `hold_signal_no_trade`, `signal_confidence_below_threshold`, `risk_score_exceeds_maximum`, `signal_expired`, `chainlink_feed_invalid`, `chainlink_feed_not_updated`, `chainlink_round_incomplete`, `chainlink_feed_stale`, `price_deviation_exceeds_threshold`, `agent_heartbeat_stale`
+
+**Coordinator integration:** The `agent-coordinator` connects via `CRE_ENDPOINT` env var. Only DeFi tasks (`defi`, `trade`, `execute_trade`) trigger a risk check. The bridge is **fail-closed** — if unreachable or if the decision is denied, the task is rejected and a `risk_check_denied` event is published to HCS.
 
 ## Scenarios
 
