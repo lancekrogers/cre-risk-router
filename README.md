@@ -5,9 +5,9 @@
 [![Chainlink CRE](https://img.shields.io/badge/Chainlink-CRE%20v1.2.0-375BD2?logo=chainlink)](https://chain.link)
 [![Chain](https://img.shields.io/badge/Ethereum-Sepolia-3C3C3D?logo=ethereum)](https://sepolia.etherscan.io)
 [![Built with Foundry](https://img.shields.io/badge/Built%20with-Foundry-FFDB1C)](https://getfoundry.sh)
-[![Hackathon](https://img.shields.io/badge/Chainlink%20Convergence-2nd%20Place%20Autonomous%20Agents-FFD700)](https://chain.link/hackathon/winners)
+[![Hackathon](https://img.shields.io/badge/Chainlink%20Convergence-2nd%20Place%20Autonomous%20Agents-FFD700)](https://chain.link/hackathon/winners/cre-risk-router)
 
-**2nd Place, Autonomous Agents** -- [Convergence: A Chainlink Hackathon 2026](https://chain.link/hackathon/winners)
+**2nd Place, Autonomous Agents** -- [Convergence: A Chainlink Hackathon 2026](https://chain.link/hackathon/winners/cre-risk-router)
 
 An **on-chain risk decision layer** for autonomous DeFi agents, built on the [Chainlink Runtime Environment (CRE)](https://chain.link). The Risk Router evaluates trade signals through **8 sequential risk gates** and writes immutable decision receipts to Ethereum via Chainlink DON consensus.
 
