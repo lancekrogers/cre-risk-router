@@ -6,6 +6,8 @@
 [![Chain](https://img.shields.io/badge/Ethereum-Sepolia-3C3C3D?logo=ethereum)](https://sepolia.etherscan.io)
 [![Built with Foundry](https://img.shields.io/badge/Built%20with-Foundry-FFDB1C)](https://getfoundry.sh)
 [![Hackathon](https://img.shields.io/badge/Chainlink%20Convergence-2nd%20Place%20Autonomous%20Agents-FFD700)](https://chain.link/hackathon/winners/cre-risk-router)
+  <a href="https://github.com/Obedience-Corp/festival"><img src="https://img.shields.io/badge/built%20with-Festival-7c3aed.svg" alt="Built with Festival"></a>
+
 
 **2nd Place, Autonomous Agents** -- [Convergence: A Chainlink Hackathon 2026](https://chain.link/hackathon/winners/cre-risk-router)
 
